@@ -1,0 +1,50 @@
+# One-command start:  docker compose up --build
+# App: http://localhost:5173   |   Django admin: http://localhost:8000/admin/
+x-backend: &backend
+  build: ./backend
+  environment: &env
+    DEBUG: "True"
+    DB_ENGINE: postgres
+    DB_NAME: clinic_db
+    DB_USER: clinic_user
+    DB_PASSWORD: clinic_pass
+    DB_HOST: db
+    CELERY_BROKER_URL: redis://redis:6379/0
+    CELERY_RESULT_BACKEND: redis://redis:6379/1
+    CELERY_EAGER: "0"
+  volumes:
+    - ./backend:/app
+  depends_on: [db, redis]
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: clinic_db
+      POSTGRES_USER: clinic_user
+      POSTGRES_PASSWORD: clinic_pass
+    volumes: [pgdata:/var/lib/postgresql/data]
+  redis:
+    image: redis:7
+  backend:
+    <<: *backend
+    command: sh -c "python manage.py migrate && python manage.py seed_initial && python manage.py runserver 0.0.0.0:8000"
+    ports: ["8000:8000"]
+  worker:
+    <<: *backend
+    command: celery -A config worker -l info
+  beat:
+    <<: *backend
+    command: celery -A config beat -l info
+  frontend:
+    build: ./frontend
+    command: npm run dev -- --host 0.0.0.0
+    environment:
+      VITE_PROXY_TARGET: http://backend:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports: ["5173:5173"]
+    depends_on: [backend]
+volumes:
+  pgdata:

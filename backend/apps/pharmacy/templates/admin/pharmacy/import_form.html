@@ -1,0 +1,10 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<div id="content-main">
+  <p>Upload a <b>CSV</b>, <b>Excel (.xlsx)</b> or <b>PDF</b> file. Recognised columns: name, strength, form, stock qty, price, expiry date, batch no, generic name.</p>
+  <form method="post" enctype="multipart/form-data">{% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Upload &amp; import" class="default">
+  </form>
+</div>
+{% endblock %}
