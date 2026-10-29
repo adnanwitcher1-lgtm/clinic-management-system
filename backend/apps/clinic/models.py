@@ -56,6 +56,12 @@ class Visit(models.Model):
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.WAITING, db_index=True)
     is_follow_up = models.BooleanField(default=False)
 
+    class VisitType(models.TextChoices):
+        CHECKUP = "checkup", "Check-up"
+        COUNSELLING = "counselling", "Counselling"
+
+    visit_type = models.CharField(max_length=20, choices=VisitType.choices, default=VisitType.CHECKUP, db_index=True)
+
     complaints = models.TextField(blank=True, help_text="Auto-built from ticked symptoms")
     notes = models.TextField(blank=True)
     diagnosis = models.TextField(blank=True)

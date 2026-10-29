@@ -204,6 +204,7 @@ class VisitListSerializer(serializers.ModelSerializer):
     doctor_name = serializers.SerializerMethodField()
     vitals = VitalsSerializer(read_only=True)
     status_label = serializers.CharField(source="get_status_display", read_only=True)
+    visit_type_label = serializers.CharField(source="get_visit_type_display", read_only=True)
     medicine_total = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
     total_due = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
     paid_amount = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
@@ -221,7 +222,7 @@ class VisitListSerializer(serializers.ModelSerializer):
         model = Visit
         fields = [
             "id", "patient", "doctor", "doctor_name", "token_no", "visit_date", "status", "status_label",
-            "is_follow_up", "complaints", "notes", "diagnosis", "follow_up_date", "consultation_fee",
+            "is_follow_up", "visit_type", "visit_type_label", "complaints", "notes", "diagnosis", "follow_up_date", "consultation_fee",
             "medicine_total", "total_due", "paid_amount", "balance", "payment_status", "vitals",
             "store_items", "outside_items", "injection_count", "injection_total", "has_prescription", "prescription_id", "dispensed",
             "created_at", "started_at", "finished_at",
@@ -294,6 +295,7 @@ class VisitRegisterSerializer(serializers.Serializer):
     doctor = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(role="doctor", is_active=True), required=False, allow_null=True)
     consultation_fee = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, min_value=0)
     is_follow_up = serializers.BooleanField(required=False, default=False)
+    visit_type = serializers.ChoiceField(choices=Visit.VisitType.choices, required=False, default=Visit.VisitType.CHECKUP)
     notes = serializers.CharField(required=False, allow_blank=True)
 
     def validate(self, a):
@@ -320,12 +322,15 @@ class VisitRegisterSerializer(serializers.Serializer):
         if not doctor:
             raise serializers.ValidationError({"doctor": "No doctor is available. Add or enable a doctor first."})
         fee = vd.get("consultation_fee")
+        visit_type = vd.get("visit_type", Visit.VisitType.CHECKUP)
         if fee is None:
-            fee = doctor.consultation_fee if doctor.consultation_fee is not None else ClinicSettings.load().default_consultation_fee
+            default_fee = doctor.consultation_fee if doctor.consultation_fee is not None else ClinicSettings.load().default_consultation_fee
+            # counselling-only sessions use the doctor's counselling fee (falls back to the normal fee when not set)
+            fee = doctor.counselling_fee if visit_type == Visit.VisitType.COUNSELLING and doctor.counselling_fee is not None else default_fee
         # a returning patient coming for a follow-up can be charged nothing by sending consultation_fee=0
         visit = Visit.objects.create(
             patient=patient, doctor=doctor, consultation_fee=fee, created_by=request.user,
-            is_follow_up=vd.get("is_follow_up", False), notes=vd.get("notes", ""),
+            is_follow_up=vd.get("is_follow_up", False), visit_type=visit_type, notes=vd.get("notes", ""),
         )
         vitals = vd.get("vitals") or {}
         Vitals.objects.create(visit=visit, **vitals)

@@ -165,6 +165,8 @@ class VisitViewSet(viewsets.ModelViewSet):
             qs = qs.filter(status__in=p["status"].split(","))
         if p.get("doctor"):
             qs = qs.filter(doctor_id=p["doctor"])
+        if p.get("visit_type"):
+            qs = qs.filter(visit_type=p["visit_type"])
         if p.get("patient"):
             qs = qs.filter(patient_id=p["patient"])
         if p.get("q"):

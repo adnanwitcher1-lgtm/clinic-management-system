@@ -27,6 +27,27 @@ class ClinicFlowTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {r.data['access']}")
         return r.data
 
+    def test_counselling_visit_fee_and_filter(self):
+        psy = User.objects.create_user("psy", password="pw123456", role="doctor", first_name="Psy", consultation_fee=1000, counselling_fee=2000)
+        plain = User.objects.create_user("plain", password="pw123456", role="doctor", first_name="Plain", consultation_fee=300)
+        self.login("rec")
+        pt = {"name": "Zara", "age": 28, "gender": "female"}
+        r = self.client.post("/api/visits/", {"patient": pt, "doctor": psy.id}, format="json")
+        self.assertEqual((r.data["visit_type"], float(r.data["consultation_fee"])), ("checkup", 1000.0))
+        r = self.client.post("/api/visits/", {"patient": pt, "doctor": psy.id, "visit_type": "counselling"}, format="json")
+        self.assertEqual((r.data["visit_type"], r.data["visit_type_label"], float(r.data["consultation_fee"])), ("counselling", "Counselling", 2000.0))
+        cid = r.data["id"]
+        # no counselling fee set -> falls back to the check-up fee; manual fee always wins
+        r = self.client.post("/api/visits/", {"patient": pt, "doctor": plain.id, "visit_type": "counselling"}, format="json")
+        self.assertEqual(float(r.data["consultation_fee"]), 300.0)
+        r = self.client.post("/api/visits/", {"patient": pt, "doctor": psy.id, "visit_type": "counselling", "consultation_fee": 1500}, format="json")
+        self.assertEqual(float(r.data["consultation_fee"]), 1500.0)
+        r = self.client.get("/api/visits/?visit_type=counselling")
+        self.assertEqual({v["visit_type"] for v in r.data["results"]}, {"counselling"})
+        self.assertEqual(len(r.data["results"]), 3)
+        self.assertEqual(self.client.get(f"/api/visits/{cid}/token-slip/").status_code, 200)
+        self.assertEqual(self.client.get("/api/users/doctors/").status_code, 200)
+
     def test_full_flow(self):
         self.login("rec")
         new = {

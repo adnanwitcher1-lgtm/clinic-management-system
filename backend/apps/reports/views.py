@@ -87,8 +87,8 @@ def dataset(kind, p):
         return "Patients", cols, rows
     if kind == "visits":
         qs = Visit.objects.filter(**_range(p, "visit_date")).select_related("patient", "doctor").prefetch_related("payments", "prescription__items", "prescription__injections__components").order_by("-visit_date", "-token_no")
-        cols = ["Date", "Token", "Patient No", "Patient", "Doctor", "Status", "Diagnosis", "Fee", "Medicines", "Injections", "Total", "Paid"]
-        rows = [[str(v.visit_date), v.token_no, v.patient.patient_no, v.patient.name, v.doctor.display_name, v.get_status_display(), v.diagnosis[:80], float(v.consultation_fee), float(v.medicine_total), float(v.injection_total), float(v.total_due), float(v.paid_amount)] for v in qs[:3000]]
+        cols = ["Date", "Token", "Patient No", "Patient", "Doctor", "Type", "Status", "Diagnosis", "Fee", "Medicines", "Injections", "Total", "Paid"]
+        rows = [[str(v.visit_date), v.token_no, v.patient.patient_no, v.patient.name, v.doctor.display_name, v.get_visit_type_display(), v.get_status_display(), v.diagnosis[:80], float(v.consultation_fee), float(v.medicine_total), float(v.injection_total), float(v.total_due), float(v.paid_amount)] for v in qs[:3000]]
         return "Visits", cols, rows
     if kind == "inventory":
         qs = Medicine.objects.order_by("name")

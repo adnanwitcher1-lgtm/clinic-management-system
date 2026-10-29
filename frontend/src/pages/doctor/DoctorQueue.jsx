@@ -68,6 +68,7 @@ export default function DoctorQueue() {
                     {v.patient.allergies && <div className="small" style={{ color: 'var(--red)' }}>⚠ Allergies: {v.patient.allergies}</div>}
                     <div style={{ marginTop: 4 }}><VitalsRow v={v.vitals} /></div>
                   </div>
+                  {v.visit_type === 'counselling' && <span className="badge b-store">Counselling</span>}
                   {v.is_follow_up && <span className="badge b-store">Follow-up</span>}
                   <Status value={v.status} />
                   <button className="btn sm"><PlayCircle size={15} /> {v.status === 'with_doctor' ? 'Continue' : 'Open'}</button>

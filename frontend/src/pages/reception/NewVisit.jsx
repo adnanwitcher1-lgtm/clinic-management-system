@@ -21,6 +21,7 @@ export default function NewVisit() {
   const [doctors, setDoctors] = useState([])
   const [doctor, setDoctor] = useState('')
   const [fee, setFee] = useState('')
+  const [visitType, setVisitType] = useState('checkup')
   const [followUp, setFollowUp] = useState(false)
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(null)
@@ -53,13 +54,13 @@ export default function NewVisit() {
     setQ(''); setHits([]); setDup(null)
     toast(`${pt.name} (${pt.patient_no}) loaded — details auto-filled`)
   }
-  const reset = () => { setExisting(null); setP(BLANK); setV(VBLANK); setDoctor(''); setFee(''); setFollowUp(false); setDone(null) }
+  const reset = () => { setExisting(null); setP(BLANK); setV(VBLANK); setDoctor(''); setFee(''); setVisitType('checkup'); setFollowUp(false); setDone(null) }
 
   const submit = async (e) => {
     e.preventDefault()
     setBusy(true)
     try {
-      const body = { vitals: clean(v), is_follow_up: followUp }
+      const body = { vitals: clean(v), is_follow_up: followUp, visit_type: visitType }
       if (!v.sugar) delete body.vitals.sugar_type
       if (doctor) body.doctor = Number(doctor)
       if (fee !== '') body.consultation_fee = fee
@@ -74,6 +75,8 @@ export default function NewVisit() {
     }
   }
   const set = (k) => (e) => setP({ ...p, [k]: e.target.value })
+  const doc = doctors.find((d) => String(d.id) === String(doctor))
+  const defaultFee = doc ? (visitType === 'counselling' && doc.counselling_fee != null ? doc.counselling_fee : doc.consultation_fee) : null
   const setVit = (k) => (e) => setV({ ...v, [k]: e.target.value })
 
   if (done)
@@ -85,7 +88,7 @@ export default function NewVisit() {
           <div className="muted">{done.patient.name} · {done.patient.patient_no}</div>
           <motion.div initial={{ rotate: -8, scale: 0.5 }} animate={{ rotate: 0, scale: 1 }} transition={{ type: 'spring', delay: 0.25 }} className="token" style={{ width: 120, height: 120, fontSize: 56, borderRadius: 30, margin: '22px auto 8px' }}>{done.token_no}</motion.div>
           <div className="bold">Token number</div>
-          <div className="muted" style={{ margin: '6px 0 20px' }}>Assigned to <b>Dr. {done.doctor_name}</b> — appears in the doctor's queue instantly.</div>
+          <div className="muted" style={{ margin: '6px 0 20px' }}>{done.visit_type === 'counselling' && <><span className="badge b-store">Counselling</span> </>}Assigned to <b>Dr. {done.doctor_name}</b> — appears in the doctor's queue instantly.</div>
           <div className="row" style={{ justifyContent: 'center' }}>
             <button className="btn ghost" onClick={() => openPdf(`/visits/${done.id}/token-slip/`).catch((e) => toast(errMsg(e), 'error'))}><Printer size={16} /> Print token slip</button>
             <button className="btn" onClick={reset}><UserPlus size={16} /> Next patient</button>
@@ -175,7 +178,15 @@ export default function NewVisit() {
                   {doctors.map((d) => <option key={d.id} value={d.id} disabled={!d.is_available}>Dr. {d.full_name} — {d.waiting} waiting{d.is_available ? '' : ' (off duty)'}</option>)}
                 </select>
               </Field>
-              <Field label="Consultation fee (leave blank for doctor's default)"><input type="number" min="0" value={fee} onChange={(e) => setFee(e.target.value)} /></Field>
+              <Field label="Visit type">
+                <div className="tabs" style={{ margin: 0 }}>
+                  <button type="button" className={visitType === 'checkup' ? 'on' : ''} onClick={() => setVisitType('checkup')}>Check-up</button>
+                  <button type="button" className={visitType === 'counselling' ? 'on' : ''} onClick={() => setVisitType('counselling')}>Counselling only</button>
+                </div>
+              </Field>
+              <Field label={`${visitType === 'counselling' ? 'Counselling fee' : 'Consultation fee'} (leave blank for doctor's default)`}>
+                <input type="number" min="0" placeholder={defaultFee != null ? `Default: Rs ${Number(defaultFee)}` : "Doctor's default"} value={fee} onChange={(e) => setFee(e.target.value)} />
+              </Field>
               <label className="row" style={{ gap: 8 }}><input type="checkbox" checked={followUp} onChange={(e) => setFollowUp(e.target.checked)} /> Follow-up visit</label>
               <button className="btn" style={{ height: 46 }} disabled={busy}>{busy ? <Loader2 className="spin" size={18} /> : <>{t('Save')} &amp; issue token</>}</button>
             </div>

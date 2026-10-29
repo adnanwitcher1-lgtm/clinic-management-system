@@ -12,7 +12,8 @@ class User(AbstractUser):
     phone = models.CharField(max_length=30, blank=True)
     specialization = models.CharField(max_length=120, blank=True)
     qualification = models.CharField(max_length=200, blank=True)
-    consultation_fee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    consultation_fee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Fee for a normal check-up visit")
+    counselling_fee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Fee for a counselling-only session (falls back to the consultation fee when empty)")
     language = models.CharField(max_length=5, default="en", choices=[("en", "English"), ("ur", "Urdu")])
     is_available = models.BooleanField(default=True, help_text="Doctor is on duty (receives auto-assigned patients)")
 

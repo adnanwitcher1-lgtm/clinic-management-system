@@ -66,6 +66,7 @@ class UserViewSet(AuditedMixin, viewsets.ModelViewSet):
                 "full_name": d.display_name,
                 "specialization": d.specialization,
                 "consultation_fee": d.consultation_fee,
+                "counselling_fee": d.counselling_fee,
                 "is_available": d.is_available,
                 "waiting": d.waiting,
             }

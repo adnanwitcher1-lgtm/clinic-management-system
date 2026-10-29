@@ -4,7 +4,7 @@ import { Pencil, Plus, ShieldCheck, Stethoscope, UserCog, UserX } from 'lucide-r
 import api, { errMsg, list } from '../../api'
 import { Badge, Field, Modal, Page, PageHead, Skeleton, useToast } from '../../components/ui'
 
-const BLANK = { username: '', first_name: '', last_name: '', email: '', phone: '', role: 'receptionist', specialization: '', qualification: '', consultation_fee: '', is_available: true, is_active: true, password: '' }
+const BLANK = { username: '', first_name: '', last_name: '', email: '', phone: '', role: 'receptionist', specialization: '', qualification: '', consultation_fee: '', counselling_fee: '', is_available: true, is_active: true, password: '' }
 const ROLE = { admin: [ShieldCheck, '#f0455a'], doctor: [Stethoscope, '#2f6bff'], receptionist: [UserCog, '#8e3fc4'] }
 
 export default function Users() {
@@ -16,7 +16,7 @@ export default function Users() {
 
   const save = async (e) => {
     e.preventDefault()
-    const body = { ...edit, consultation_fee: edit.consultation_fee === '' || edit.role !== 'doctor' ? null : edit.consultation_fee }
+    const body = { ...edit, consultation_fee: edit.consultation_fee === '' || edit.role !== 'doctor' ? null : edit.consultation_fee, counselling_fee: edit.counselling_fee === '' || edit.role !== 'doctor' ? null : edit.counselling_fee }
     if (!body.password) delete body.password
     delete body.full_name
     try {
@@ -49,9 +49,9 @@ export default function Users() {
                   </div>
                   <Badge kind={u.is_active ? 'ok' : 'expired'}>{u.is_active ? u.role : 'inactive'}</Badge>
                 </div>
-                {u.role === 'doctor' && <div className="small" style={{ marginTop: 10 }}>{u.specialization || 'General'} · fee Rs {Number(u.consultation_fee || 0)} · {u.is_available ? <span style={{ color: 'var(--green)' }}>on duty</span> : <span style={{ color: 'var(--red)' }}>off duty</span>}</div>}
+                {u.role === 'doctor' && <div className="small" style={{ marginTop: 10 }}>{u.specialization || 'General'} · fee Rs {Number(u.consultation_fee || 0)}{u.counselling_fee != null ? ` · counselling Rs ${Number(u.counselling_fee)}` : ''} · {u.is_available ? <span style={{ color: 'var(--green)' }}>on duty</span> : <span style={{ color: 'var(--red)' }}>off duty</span>}</div>}
                 <div className="row" style={{ marginTop: 12, justifyContent: 'flex-end', gap: 6 }}>
-                  <button className="btn ghost sm" onClick={() => setEdit({ ...BLANK, ...u, consultation_fee: u.consultation_fee ?? '', password: '' })}><Pencil size={14} /> Edit</button>
+                  <button className="btn ghost sm" onClick={() => setEdit({ ...BLANK, ...u, consultation_fee: u.consultation_fee ?? '', counselling_fee: u.counselling_fee ?? '', password: '' })}><Pencil size={14} /> Edit</button>
                   {u.is_active && <button className="btn ghost sm icon" onClick={() => deactivate(u)}><UserX size={14} color="#f0455a" /></button>}
                 </div>
               </motion.div>
@@ -72,7 +72,8 @@ export default function Users() {
               {edit.role === 'doctor' && <>
                 <Field label="Specialization"><input value={edit.specialization} onChange={f('specialization')} /></Field>
                 <Field label="Qualification"><input value={edit.qualification} onChange={f('qualification')} /></Field>
-                <Field label="Consultation fee (Rs)"><input type="number" value={edit.consultation_fee} onChange={f('consultation_fee')} /></Field>
+                <Field label="Check-up fee (Rs)"><input type="number" value={edit.consultation_fee} onChange={f('consultation_fee')} /></Field>
+                <Field label="Counselling fee (Rs)"><input type="number" placeholder="Same as check-up if empty" value={edit.counselling_fee} onChange={f('counselling_fee')} /></Field>
                 <label className="row" style={{ alignSelf: 'end', gap: 8 }}><input type="checkbox" checked={edit.is_available} onChange={f('is_available')} /> On duty (gets new patients)</label>
               </>}
               {edit.id && <label className="row" style={{ gap: 8 }}><input type="checkbox" checked={edit.is_active} onChange={f('is_active')} /> Account active</label>}

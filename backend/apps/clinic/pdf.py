@@ -343,7 +343,7 @@ def build_thermal(rx, cfg):
     if not store and not injections:
         story.append(_tp("No clinic medicines / injections", 7.5, False, 0))
     story.append(_dash())
-    story += [_two_col("Consultation", money(cfg, v.consultation_fee)), _two_col("Medicines", money(cfg, v.medicine_total))]
+    story += [_two_col("Counselling" if v.visit_type == "counselling" else "Consultation", money(cfg, v.consultation_fee)), _two_col("Medicines", money(cfg, v.medicine_total))]
     if injections:
         story.append(_two_col("Injections", money(cfg, v.injection_total)))
     story += [_two_col("TOTAL", money(cfg, v.total_due), True, 9), _two_col("Paid", money(cfg, v.paid_amount))]
@@ -389,7 +389,7 @@ def build_outside_thermal(rx, cfg):
 def build_token_slip(visit, cfg):
     story = [_tp(cfg.clinic_name, 13, True), _tp(cfg.address, 7), _dash(), _tp("YOUR TOKEN", 9, True), _tp(f"#{visit.token_no}", 34, True), _dash(),
              _two_col("Patient", visit.patient.name, True), _two_col("Pt No", visit.patient.patient_no), _two_col("Doctor", f"Dr. {visit.doctor.display_name}"),
-             _two_col("Date", f"{visit.visit_date:%d-%m-%Y}"), _two_col("Time", f"{visit.created_at.astimezone():%I:%M %p}"), _two_col("Fee", money(cfg, visit.consultation_fee)), _dash(), _tp("Please wait for your number.", 7.5)]
+             _two_col("Date", f"{visit.visit_date:%d-%m-%Y}"), _two_col("Time", f"{visit.created_at.astimezone():%I:%M %p}"), _two_col("Fee", money(cfg, visit.consultation_fee))] + ([_two_col("Type", "Counselling")] if visit.visit_type == "counselling" else []) + [_dash(), _tp("Please wait for your number.", 7.5)]
     return _thermal_build(story, f"Token {visit.token_no}")
 
 

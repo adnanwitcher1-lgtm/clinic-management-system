@@ -148,7 +148,7 @@ function Dispense({ visitId, onClose, onDone }) {
           <div className="card" style={{ boxShadow: 'none', padding: 14 }}>
             <h3><Banknote size={17} /> {t('Billing')}</h3>
             <table><tbody>
-              <tr><td>Consultation fee</td><td className="right">{money(v.consultation_fee)}</td></tr>
+              <tr><td>{v.visit_type === 'counselling' ? 'Counselling fee' : 'Consultation fee'}</td><td className="right">{money(v.consultation_fee)}</td></tr>
               <tr><td>Medicines</td><td className="right">{money(medTotal)}</td></tr>
               {injs.length > 0 && <tr><td>Injections</td><td className="right">{money(injTotal)}</td></tr>}
               <tr><td><b>Total</b></td><td className="right"><b>{money(total)}</b></td></tr>
@@ -198,6 +198,7 @@ function Dispense({ visitId, onClose, onDone }) {
 export default function Queue() {
   const [rows, setRows] = useState(null)
   const [tab, setTab] = useState('all')
+  const [vtype, setVtype] = useState('all')
   const [open, setOpen] = useState(null)
   const nav = useNavigate()
   const toast = useToast()
@@ -217,8 +218,10 @@ export default function Queue() {
   }, []) // eslint-disable-line
   usePolling(load, 5000, [])
 
-  const counts = useMemo(() => Object.fromEntries(TABS.map(([k, , , st]) => [k, (rows || []).filter((v) => !st || st.includes(v.status)).length])), [rows])
-  const shown = (rows || []).filter((v) => tab === 'all' || v.status === tab)
+  const typed = useMemo(() => (rows || []).filter((v) => vtype === 'all' || v.visit_type === vtype), [rows, vtype])
+  const typeCount = (k) => (rows || []).filter((v) => k === 'all' || v.visit_type === k).length
+  const counts = useMemo(() => Object.fromEntries(TABS.map(([k, , , st]) => [k, typed.filter((v) => !st || st.includes(v.status)).length])), [typed])
+  const shown = typed.filter((v) => tab === 'all' || v.status === tab)
   const cancel = async (v) => {
     if (!window.confirm(`Cancel token #${v.token_no}?`)) return
     try { await api.post(`/visits/${v.id}/cancel/`); toast('Visit cancelled'); load() } catch (e) { toast(errMsg(e), 'error') }
@@ -241,6 +244,12 @@ export default function Queue() {
         ))}
       </div>
 
+      <div className="tabs" style={{ marginBottom: 10 }}>
+        {[['all', 'All visits'], ['checkup', 'Check-ups'], ['counselling', 'Counselling']].map(([k, label]) => (
+          <button key={k} className={vtype === k ? 'on' : ''} onClick={() => setVtype(k)}>{label} <span className="n">{typeCount(k)}</span></button>
+        ))}
+      </div>
+
       <div className="tabs" style={{ marginBottom: 16 }}>
         {TABS.map(([k, label]) => (
           <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{t(label)} <span className="n">{counts[k]}</span></button>
@@ -257,7 +266,7 @@ export default function Queue() {
                 <div className="token">{v.token_no}</div>
                 <div className="info">
                   <b>{v.patient.name} <small className="muted">· {v.patient.patient_no} · {v.patient.age}y</small></b>
-                  <div className="small muted"><Stethoscope size={12} /> Dr. {v.doctor_name}{v.is_follow_up ? ' · follow-up' : ''}</div>
+                  <div className="small muted"><Stethoscope size={12} /> Dr. {v.doctor_name}{v.is_follow_up ? ' · follow-up' : ''}{v.visit_type === 'counselling' ? ' · counselling' : ''}</div>
                   <div style={{ marginTop: 4 }}><VitalsRow v={v.vitals} /></div>
                 </div>
                 <div className="stack" style={{ alignItems: 'flex-end', gap: 6 }}>
