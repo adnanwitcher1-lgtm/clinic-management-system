@@ -42,9 +42,9 @@ export function Modal({ title, onClose, children, wide }) {
   return (
     <motion.div className="overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <motion.div className={`modal ${wide ? 'wide' : ''}`} initial={{ y: 30, scale: 0.96, opacity: 0 }} animate={{ y: 0, scale: 1, opacity: 1 }}>
-        <div className="row between" style={{ marginBottom: 14 }}>
-          <h3 style={{ fontSize: 18 }}>{t(title)}</h3>
-          <button className="btn ghost icon" onClick={onClose}><X size={18} /></button>
+        <div className="row between" style={{ marginBottom: 14, flexWrap: 'nowrap', gap: 10 }}>
+          <h3 style={{ fontSize: 18, minWidth: 0 }}>{t(title)}</h3>
+          <button className="btn ghost icon" style={{ flexShrink: 0 }} onClick={onClose}><X size={18} /></button>
         </div>
         {children}
       </motion.div>

@@ -43,7 +43,7 @@ export default function Billing() {
             <StatCard icon={CreditCard} color="#8e3fc4" label="Card" value={d.card_total} prefix="Rs " delay={2} />
             <StatCard icon={Landmark} color="#ff9f43" label="Online" value={d.online_total} prefix="Rs " delay={3} />
           </div>
-          <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.6fr) minmax(0,1fr)', alignItems: 'start' }}>
+          <div className="grid split-2b" style={{ alignItems: 'start' }}>
             <div className="card">
               <h3><Banknote size={17} /> Payments · {d.payments_count}</h3>
               {pays.length === 0 ? <Empty text="No payments on this day" /> : (

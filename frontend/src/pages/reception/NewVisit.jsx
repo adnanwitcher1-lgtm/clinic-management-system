@@ -127,7 +127,7 @@ export default function NewVisit() {
         {existing && <div className="small" style={{ color: 'var(--green)', marginTop: 8 }}><CheckCircle2 size={14} /> Returning patient — only a new visit will be added (no duplicate record).</div>}
       </div>
 
-      <form onSubmit={submit} className="grid" style={{ gridTemplateColumns: 'minmax(0,1.5fr) minmax(0,1fr)', alignItems: 'start' }}>
+      <form onSubmit={submit} className="grid split-2" style={{ alignItems: 'start' }}>
         <div className="card">
           <h3><UserPlus size={17} /> Patient details {existing && <span className="badge b-store">Auto-filled</span>}</h3>
           <div className="form-grid">

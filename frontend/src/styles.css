@@ -311,6 +311,10 @@ label.field.grow { flex: 1; min-width: 120px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { animation: spin 1s linear infinite; }
 
+/* two-column page layouts (stack on phones) */
+.split-2 { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
+.split-2b { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+
 /* responsive */
 @media (max-width: 1100px) { .g4 { grid-template-columns: repeat(2, 1fr); } .g3 { grid-template-columns: repeat(2, 1fr); } .consult-grid { grid-template-columns: 300px minmax(0, 1fr); } }
 @media (max-width: 900px) {
@@ -326,12 +330,18 @@ label.field.grow { flex: 1; min-width: 120px; }
   .span2 { grid-column: auto; }
   .pill.hide-sm { display: none; }
 }
+@media (max-width: 760px) {
+  .split-2, .split-2b { grid-template-columns: minmax(0, 1fr); }
+  .table-wrap td { min-width: 96px; } .table-wrap td.right, .table-wrap th.right, .table-wrap td:first-child { white-space: nowrap; }
+}
 @media (max-width: 560px) {
   .g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
   .card { padding: 14px; }
   .stat { gap: 10px; } .stat-icon { width: 42px; height: 42px; } .stat-icon svg { width: 20px; height: 20px; } .stat b { font-size: 20px; } .stat span { font-size: 11.5px; }
   .q-card { flex-wrap: wrap; padding: 12px; } .q-card .info { flex-basis: calc(100% - 70px); }
   .modal { padding: 16px; border-radius: 18px; }
+  .modal .table-wrap td { min-width: 0; padding: 9px 6px; } .modal .table-wrap th { padding: 8px 6px; }
+  .modal .table-wrap input[type='number'] { min-width: 64px; }
   .page-title { font-size: 19px; }
   .topbar .search input { font-size: 13px; }
   .form-grid { grid-template-columns: 1fr 1fr; } .span2 { grid-column: 1 / -1; }
